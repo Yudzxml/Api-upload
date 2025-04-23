@@ -30,7 +30,7 @@ module.exports = async (req, res) => {
     }
 
     const repoOwner = 'Yudzxml';
-    const repoName = 'Uploader';
+    const repoName = 'UploaderV2/tmp';
     const branch = 'main';
     const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${newFileName}`;
 
