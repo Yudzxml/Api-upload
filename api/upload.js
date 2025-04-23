@@ -1,4 +1,5 @@
 const axios = require('axios');
+const crypto = require('crypto'); // built-in module untuk generate string acak
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -12,30 +13,23 @@ module.exports = async (req, res) => {
     return res.status(400).json({ error: 'fileName dan content (base64) wajib diisi' });
   }
 
+  // Ambil ekstensi file asli
+  const extension = fileName.split('.').pop();
+
+  // Generate nama acak (misal: v3c5gds.jpg)
+  const randomName = crypto.randomBytes(4).toString('hex'); // hasil: 8 karakter acak
+  const newFileName = `${randomName}.${extension}`;
+
   const githubToken = process.env.GITHUB_TOKEN;
   const repoOwner = 'Yudzxml';
   const repoName = 'Uploader';
   const branch = 'main';
-  const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${fileName}`;
+  const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${newFileName}`;
 
   try {
-    // Cek apakah file sudah ada (ambil SHA kalau update)
-    let sha = null;
-    try {
-      const getRes = await axios.get(url, {
-        headers: {
-          Authorization: `token ${githubToken}`,
-          Accept: 'application/vnd.github.v3+json',
-        },
-      });
-      sha = getRes.data.sha;
-    } catch (_) {}
-
-    // Upload ke GitHub
     await axios.put(url, {
       message: 'Upload file buffer',
       content: content,
-      ...(sha && { sha }),
     }, {
       headers: {
         Authorization: `token ${githubToken}`,
@@ -46,7 +40,8 @@ module.exports = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: 'File berhasil diupload ke GitHub',
-      url: `https://raw.githubusercontent.com/${repoOwner}/${repoName}/${branch}/${fileName}`
+      fileName: newFileName,
+      url: `https://raw.githubusercontent.com/${repoOwner}/${repoName}/${branch}/${newFileName}`
     });
 
   } catch (err) {
