@@ -30,9 +30,9 @@ module.exports = async (req, res) => {
     }
 
     const repoOwner = 'Yudzxml';
-    const repoName = 'UploaderV2/tmp';
+    const repoName = 'UploaderV2';
     const branch = 'main';
-    const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${newFileName}`;
+    const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/tmp/${newFileName}`;
 
     try {
       const base64Content = buffer.toString('base64');
