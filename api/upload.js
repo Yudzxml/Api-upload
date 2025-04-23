@@ -4,7 +4,8 @@ const crypto = require('crypto');
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-filename');
+  res.setHeader('Content-Type', 'application/json');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end(`Method ${req.method} Not Allowed`);
@@ -19,10 +20,15 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'Header x-filename dan body buffer wajib diisi' });
     }
 
-    const extension = fileName.split('.').pop();
+    const extension = fileName.includes('.') ? fileName.split('.').pop() : 'bin';
     const randomName = crypto.randomBytes(4).toString('hex');
     const newFileName = `${randomName}.${extension}`;
+
     const githubToken = process.env.GITHUB_TOKEN;
+    if (!githubToken) {
+      return res.status(500).json({ error: 'GITHUB_TOKEN belum diset di environment variables' });
+    }
+
     const repoOwner = 'Yudzxml';
     const repoName = 'Uploader';
     const branch = 'main';
@@ -30,6 +36,7 @@ module.exports = async (req, res) => {
 
     try {
       const base64Content = buffer.toString('base64');
+
       await axios.put(url, {
         message: 'Upload file via buffer',
         content: base64Content,
