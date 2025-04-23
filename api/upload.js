@@ -1,7 +1,17 @@
 const axios = require('axios');
-const crypto = require('crypto'); // built-in module untuk generate string acak
+const crypto = require('crypto');
 
 module.exports = async (req, res) => {
+  // CORS Middleware
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  // Handle preflight OPTIONS request
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).end(`Method ${req.method} Not Allowed`);
@@ -13,11 +23,8 @@ module.exports = async (req, res) => {
     return res.status(400).json({ error: 'fileName dan content (base64) wajib diisi' });
   }
 
-  // Ambil ekstensi file asli
   const extension = fileName.split('.').pop();
-
-  // Generate nama acak (misal: v3c5gds.jpg)
-  const randomName = crypto.randomBytes(4).toString('hex'); // hasil: 8 karakter acak
+  const randomName = crypto.randomBytes(4).toString('hex');
   const newFileName = `${randomName}.${extension}`;
 
   const githubToken = process.env.GITHUB_TOKEN;
