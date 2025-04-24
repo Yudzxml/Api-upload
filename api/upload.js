@@ -32,7 +32,8 @@ module.exports = async (req, res) => {
     const repoOwner = 'Yudzxml';
     const repoName = 'UploaderV2';
     const branch = 'main';
-    const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/tmp/${newFileName}`;
+    const folderName = 'tmp';
+    const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${folderName}/${newFileName}`;
 
     try {
       const base64Content = buffer.toString('base64');
@@ -48,11 +49,14 @@ module.exports = async (req, res) => {
       });
 
       return res.status(200).json({
-        success: true,
+        success: 200,
+        author: "Yudzxml",
+        data: {
         message: 'File berhasil diupload ke GitHub',
         fileName: newFileName,
-        url: `https://raw.githubusercontent.com/${repoOwner}/${repoName}/${branch}/${newFileName}`
-      });
+        extension: extension,
+        url: `https://raw.githubusercontent.com/${repoOwner}/${repoName}/refs/heads/${branch}/${folderName}/${newFileName}`
+        }});
     } catch (err) {
       return res.status(500).json({
         error: 'Gagal upload ke GitHub',
