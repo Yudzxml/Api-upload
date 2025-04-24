@@ -12,6 +12,11 @@ module.exports = async (req, res) => {
 
   const chunks = [];
   req.on('data', chunk => chunks.push(chunk));
+  req.on('error', (err) => {
+    console.error('Error while receiving data:', err);
+    return res.status(500).json({ error: 'Error receiving file data' });
+  });
+
   req.on('end', async () => {
     const buffer = Buffer.concat(chunks);
 
@@ -38,7 +43,7 @@ module.exports = async (req, res) => {
     try {
       const base64Content = buffer.toString('base64');
 
-      await axios.put(url, {
+      const response = await axios.put(url, {
         message: 'Upload file via buffer',
         content: base64Content,
       }, {
@@ -50,14 +55,16 @@ module.exports = async (req, res) => {
 
       return res.status(200).json({
         success: 200,
-        author: "Yudzxml",
+        author: 'Yudzxml',
         data: {
-        message: 'File berhasil diupload ke GitHub',
-        fileName: newFileName,
-        extension: extension,
-        url: `https://raw.githubusercontent.com/${repoOwner}/${repoName}/refs/heads/${branch}/${folderName}/${newFileName}`
-        }});
+          message: 'File berhasil diupload ke GitHub',
+          fileName: newFileName,
+          extension: extension,
+          url: `https://raw.githubusercontent.com/${repoOwner}/${repoName}/${branch}/${folderName}/${newFileName}`
+        }
+      });
     } catch (err) {
+      console.error('Error uploading to GitHub:', err);
       return res.status(500).json({
         error: 'Gagal upload ke GitHub',
         detail: err.response?.data || err.message,
